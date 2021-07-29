@@ -20,13 +20,13 @@ jobs:
         pip install -r backend/foodgram/requirements.txt
 
     - name: Lint with flake8
-      run: flake8 ./backend/foodgram
+      run: flake8 backend/foodgram
 
     - name: Codestyle by black
-      run: black --check ./backend/foodgram
+      run: black --check backend/foodgram
 
     - name: Test with pytest
-      run: pytest ./backend/foodgram
+      run: pytest backend/foodgram
 
   build_and_push_to_docker_hub:
     name: Push Docker image to Docker Hub
