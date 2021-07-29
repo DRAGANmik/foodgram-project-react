@@ -49,7 +49,11 @@ jobs:
         with:
           push: true
           context: ./backend/foodgram
-          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram:back
+          context: ./frontend/
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram:front
+          context: ./infra/
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram:infra
 
   deploy:
     runs-on: ubuntu-latest
@@ -64,7 +68,9 @@ jobs:
         passphrase: ${{ secrets.PASSPHRASE }}
         stack_file_name: docker-compose.yml
         script: |
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram:back
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram:front
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram:infra
           sudo docker-compose stop
           sudo docker-compose rm web
         
