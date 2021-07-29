@@ -24,7 +24,7 @@ jobs:
         pip install -r backend/foodgram/requirements.txt
     -
       name: Lint with flake8
-      run: flake8 .
+      run: flake8 backend/foodgram
     -
       name: Codestyle by black
-      run: black --check .
+      run: black --check backend/foodgram
