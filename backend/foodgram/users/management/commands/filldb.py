@@ -1,0 +1,125 @@
+import random
+
+import factory
+from django.core.management.base import BaseCommand
+
+from recipes.factories import (
+    IngredientFactory,
+    IngredientItemFactory,
+    RecipeFactory,
+    RecipeTagFactory,
+)
+from users.factories import UserFactory
+
+
+class AllFactories:
+    def create_user(self, arg):
+        UserFactory.create_batch(arg)
+
+    def create_ingredient(self, arg):
+        IngredientFactory.create_batch(arg)
+
+    def create_recipetag(self, arg):
+        RecipeTagFactory.create_batch(arg)
+
+    def create_recipe(self, arg):
+        for _ in range(arg):
+            num_tags = random.randint(1, 5)
+            RecipeFactory.create(tags=num_tags)
+
+    def create_ingredient_item(self, arg):
+        IngredientItemFactory.create_batch(arg)
+
+
+allfactories = AllFactories()
+
+OPTIONS_AND_FUNCTIONS = {
+    "user": allfactories.create_user,
+    "ingredient": allfactories.create_ingredient,
+    "recipetag": allfactories.create_recipetag,
+    "recipe": allfactories.create_recipe,
+    "ingredientitem": allfactories.create_ingredient_item,
+}
+
+
+class Command(BaseCommand):
+    help = "Fill Data Base with test data"
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--user",
+            nargs=1,
+            type=int,
+            help="Creates User objects",
+            required=False,
+        )
+        parser.add_argument(
+            "--ingredient",
+            nargs=1,
+            type=int,
+            help="Creates Ingredient objects",
+            required=False,
+        )
+        parser.add_argument(
+            "--recipetag",
+            nargs=1,
+            type=int,
+            help="Creates RecipeTag objects",
+            required=False,
+        )
+        parser.add_argument(
+            "--recipe",
+            nargs=1,
+            type=int,
+            help="Creates Recipe objects",
+            required=False,
+        )
+        parser.add_argument(
+            "--ingredientitem",
+            nargs=1,
+            type=int,
+            help="Creates IngredientItem objects",
+            required=False,
+        )
+
+    def handle(self, *args, **options):  # noqa
+
+        optional_arguments = 0
+
+        for item in list(OPTIONS_AND_FUNCTIONS):
+            if options[item]:
+                optional_arguments += 1
+                with factory.Faker.override_default_locale("ru_RU"):
+                    OPTIONS_AND_FUNCTIONS[item](options[item][0])
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            f"{options[item][0]} {item} created successfully"
+                        )
+                    )
+
+        if optional_arguments == 0:
+            try:
+
+                with factory.Faker.override_default_locale("ru_RU"):
+                    UserFactory.create_batch(10)
+
+                    IngredientFactory.create_batch(50)
+
+                    RecipeTagFactory.create_batch(5)
+
+                    for _ in range(50):
+                        num_tags = random.randint(1, 5)
+                        RecipeFactory.create(tags=num_tags)
+
+                    IngredientItemFactory.create_batch(100)
+
+                self.stdout.write(
+                    self.style.SUCCESS("The database is filled with test data")
+                )
+            except Exception:
+                self.stdout.write(
+                    self.style.ERROR(
+                        "The database is already filled with standard test "
+                        "data. To top up individual tables, use the arguments."
+                    )
+                )

@@ -1,0 +1,114 @@
+from colorfield.fields import ColorField
+from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
+from django.db import models
+
+from recipes.slugify import slugify
+
+User = get_user_model()
+
+
+class Recipe(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    ingredients = models.ManyToManyField(
+        "Ingredient",
+        through="IngredientItem",
+        through_fields=("recipe", "ingredient"),
+    )
+    tags = models.ManyToManyField("RecipeTag")
+    image = models.ImageField(upload_to="recipes/")
+    name = models.CharField(max_length=200)
+    text = models.TextField()
+    cooking_time = models.PositiveSmallIntegerField(
+        default=1, validators=[MinValueValidator(1)]
+    )
+
+    class Meta:
+        verbose_name = "Рецепт"
+        verbose_name_plural = "Рецепты"
+        ordering = ["-id"]
+
+    def __str__(self):
+        return self.name
+
+
+class RecipeTag(models.Model):
+    name = models.CharField(max_length=50)
+    color = ColorField()
+    slug = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name = "Тег"
+        verbose_name_plural = "Теги"
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+class Ingredient(models.Model):
+    name = models.CharField(max_length=50)
+    measurement_unit = models.CharField(max_length=5)
+
+    class Meta:
+        verbose_name = "Игредиент"
+        verbose_name_plural = "Игредиенты"
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.name
+
+
+class IngredientItem(models.Model):
+
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name="recipe_ingredients"
+    )
+    ingredient = models.ForeignKey(
+        Ingredient, on_delete=models.CASCADE, related_name="ingredients"
+    )
+    amount = models.PositiveSmallIntegerField(
+        default=1, validators=[MinValueValidator(1)]
+    )
+
+    class Meta:
+        verbose_name = "Элемент рецепта"
+        verbose_name_plural = "Элементы рецепта"
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.ingredient.name
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Избранное"
+        verbose_name_plural = "Избранные"
+        ordering = ["id"]
+
+    def __str__(self):
+        return "Пользователь {} рецепт {}".format(
+            self.user.username, self.recipe.name
+        )
+
+
+class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Корзина"
+        verbose_name_plural = "Корзины"
+        ordering = ["id"]
+
+    def __str__(self):
+        return "Пользователь {} рецепт {}".format(
+            self.user.username, self.recipe.name
+        )
