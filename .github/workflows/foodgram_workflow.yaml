@@ -25,11 +25,6 @@ jobs:
     - name: Codestyle by black
       run: black --check backend/foodgram
 
-    - name: Test with pytest
-    
-      run: |
-      pip install pytest
-      pytest backend/foodgram
 
   build_and_push_to_docker_hub:
     name: Push Docker image to Docker Hub
