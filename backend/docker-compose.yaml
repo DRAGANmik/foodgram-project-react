@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:12.4
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+  web:
+    build: .
+    restart: always
+    ports:
+      - "8000:8000" 
+    volumes:
+      - static_value:/code/static/
+      - media_value:/code/media/
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+
+  frontend:
+    image: mikebknd/front:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - frontend_data:/app/result_build/
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:1.19.3
+
+    ports:
+      - "80:80"
+
+    volumes:
+
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+
+      - static_value:/var/html/static/
+      - frontend_data:/usr/share/nginx/html/
+      - media_value:/var/html/media/
+      - ../docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
+      - ../docs/openapi-schema.yml:/usr/share/nginx/html/api/docs/openapi-schema.yml
+
+    depends_on:
+      - web
+
+volumes:
+  frontend_data:
+  postgres_data:
+  static_value:
+  media_value:

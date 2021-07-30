@@ -1,0 +1,10 @@
+node_modules
+
+build
+
+.dockerignore
+
+Dockerfile
+result_build
+.git
+npm-debug
