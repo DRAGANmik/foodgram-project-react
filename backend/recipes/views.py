@@ -50,14 +50,14 @@ class RecipeViewSet(ModelViewSet):
         favorite = Favorite.objects.filter(user=self.request.user.id)
 
         if is_in_shopping_cart == "true":
-            qs = queryset.filter(cart__in=cart)
+            queryset = queryset.filter(cart__in=cart)
         elif is_in_shopping_cart == "false":
-            qs = queryset.exclude(cart__in=cart)
+            queryset = queryset.exclude(cart__in=cart)
         if is_favorited == "true":
-            qs = queryset.filter(favorite__in=favorite)
+            queryset = queryset.filter(favorite__in=favorite)
         elif is_favorited == "false":
-            qs = queryset.exclude(favorite__in=favorite)
-        return qs.all()
+            queryset = queryset.exclude(favorite__in=favorite)
+        return queryset.all()
 
     def get_serializer_class(self):
         if self.action != "list" and self.action != "retrieve":
