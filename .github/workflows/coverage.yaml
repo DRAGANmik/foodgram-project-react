@@ -20,7 +20,7 @@ jobs:
         pip install flake8 pep8-naming flake8-broken-line flake8-return flake8-isort black pytest
         pip install -r backend/requirements.txt
     - name: Test with pytest
-      run: pytest backend/
+      run: pytest ./backend/
     - name: Generate Report
       run: |
         pip install coverage
