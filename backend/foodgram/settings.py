@@ -85,23 +85,16 @@ WSGI_APPLICATION = "foodgram.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": os.environ.get(
+            "DB_ENGINE", default="django.db.backends.postgresql"
+        ),
+        "NAME": os.environ.get("DB_NAME", default="postgres"),
+        "USER": os.environ.get("POSTGRES_USER", default="local-pg"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", default="local-pg"),
+        "HOST": os.environ.get("DB_HOST"),
+        "PORT": os.environ.get("DB_PORT", default="5432"),
     }
 }
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": os.environ.get(
-#             "DB_ENGINE", default="django.db.backends.postgresql"
-#         ),
-#         "NAME": os.environ.get("DB_NAME", default="postgres"),
-#         "USER": os.environ.get("POSTGRES_USER", default="local-pg"),
-#         "PASSWORD": os.environ.get("POSTGRES_PASSWORD", default="local-pg"),
-#         "HOST": os.environ.get("DB_HOST"),
-#         "PORT": os.environ.get("DB_PORT", default="5432"),
-#     }
-# }
 
 
 # Password validation

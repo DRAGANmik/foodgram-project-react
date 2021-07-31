@@ -45,7 +45,8 @@ class RecipeTagFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ["name"]
 
     name = factory.Faker(
-        "word", ext_word_list=["Завтрак", "Обед", "Ужин", "Полдник", "Ланч", "Десерт"]
+        "word",
+        ext_word_list=["Завтрак", "Обед", "Ужин", "Полдник", "Ланч", "Десерт"],
     )
     color = factory.Faker("hex_color", locale="en_US")
 
