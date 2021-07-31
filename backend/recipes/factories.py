@@ -22,6 +22,7 @@ fake = Faker(["ru_RU"])
 
 
 try:
+
     def json_dict():
         with open("../data/ingredients.json") as json_file:
             return json.load(json_file)
@@ -31,8 +32,7 @@ try:
 
 except Exception:
     name = [i for i in "exeption"]
-    dimension = [i  for i in "exeption"]
-
+    dimension = [i for i in "exeption"]
 
 
 class IngredientFactory(factory.django.DjangoModelFactory):
