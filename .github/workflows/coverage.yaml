@@ -1,10 +1,7 @@
 name: Run tests and Generate Coverage Report
 
-on:
-  pull_request:
-    branches:
-      - main
-      - develop
+on: [push]
+
 
 jobs:
   tests_and_coverage:
