@@ -165,7 +165,7 @@ django = ">=2.2"
 name = "factory-boy"
 version = "3.2.0"
 description = "A versatile test fixtures replacement based on thoughtbot's factory_bot for Ruby."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -180,7 +180,7 @@ doc = ["sphinx", "sphinx-rtd-theme", "sphinxcontrib-spelling"]
 name = "faker"
 version = "8.10.1"
 description = "Faker is a Python package that generates fake data for you."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -440,7 +440,7 @@ testing = ["django", "django-configurations (>=2.0)"]
 name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 
@@ -481,7 +481,7 @@ rlpycairo = ["rlPyCairo (>=0.0.5)"]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -510,7 +510,7 @@ test = ["pytest (>=3.6)", "pytest-cov", "pytest-django", "zope.component", "sybi
 name = "text-unidecode"
 version = "1.3"
 description = "The most basic Text::Unidecode port"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -533,7 +533,7 @@ python-versions = ">=3.6"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "2417b1dc1689417dcade5a81cb1a80255103e1d073a6be45a8d63540276b6db0"
+content-hash = "102dd5902f9f1e055fbea1c5ceabf2958bcf27671d687d8455e3c0088f8b507d"
 
 [metadata.files]
 appdirs = [

@@ -21,7 +21,7 @@ from .models import Subscription
 from .serializers import (
     AuthorSerializer,
     ChangePasswordSerializer,
-    DetailSerializer,
+    CreateUserSerializer,
     SubscriptionSerializer,
     TokenSerializer,
     UserSerializer,
@@ -64,8 +64,13 @@ class LogoutAPIView(APIView):
 
 class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     queryset = User.objects.all()
+
+    def get_serializer_class(self):
+        if self.action != "list" and self.action != "retrieve":
+            return CreateUserSerializer
+        return UserSerializer
 
     @action(
         detail=False,
@@ -76,12 +81,12 @@ class UserViewSet(ModelViewSet):
     )
     def view_me(self, request):
         user = User.objects.get(username=request.user.username)
-        serializer = DetailSerializer(user, data=request.data)
+        serializer = UserSerializer(user, data=request.data)
 
         if serializer.is_valid():
             if request.method == "PATCH":
                 serializer.save()
-        serializer = DetailSerializer(user)
+        serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(

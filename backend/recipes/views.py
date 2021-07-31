@@ -1,13 +1,13 @@
-from datetime import datetime
-
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from reportlab.lib.utils import ImageReader
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from recipes.filters import RecipeFilter
@@ -22,7 +22,6 @@ from recipes.models import (
 from recipes.serializers import (
     CartSerializer,
     FavoriteSerializer,
-    IngredientItemSerializer,
     IngredientSerializer,
     RecipeSerializer,
     RecipeSerializerPost,
@@ -146,36 +145,54 @@ class IngredientViewSet(ModelViewSet):
     pagination_class = None
 
 
-class IngredientItemViewSet(ModelViewSet):
-    queryset = IngredientItem.objects.all()
-    serializer_class = IngredientItemSerializer
+class PDFCartAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get(self, request):
+        user = request.user
+        ingredients_dict = {}
+        ingredients = IngredientItem.objects.filter(recipe__cart__user=user)
 
-def pdf_dw(request):
+        for item in ingredients:
+            name = item.ingredient.name
+            measurement_unit = item.ingredient.measurement_unit
+            amount = item.amount
+            if name not in ingredients_dict:
+                ingredients_dict[name] = {
+                    "measurement_unit": measurement_unit,
+                    "amount": amount,
+                }
+            else:
+                ingredients_dict[name][amount] += amount
+        pdfmetrics.registerFont(
+            TTFont("DejaVuSerif", "DejaVuSerif.ttf", "UTF-8")
+        )
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = (
+            "attachment; " 'filename="shopping_list.pdf"'
+        )
+        page = canvas.Canvas(response)
+        page.setFont("DejaVuSerif", size=20)
+        page.drawString(180, 750, "Список ингредиентов:")
+        page.setFont("DejaVuSerif", size=16)
+        height = 700
+        i = 1
 
-    # Create the HttpResponse object
-    response = HttpResponse(content_type="application/pdf")
+        for name, data in ingredients_dict.items():
+            page.drawString(
+                50,
+                height,
+                (
+                    f'{i}) { name } - {data["amount"]} '
+                    f'({data["measurement_unit"]}.)'
+                ),
+            )
+            height -= 25
+            i += 1
 
-    # This line force a download
-    response["Content-Disposition"] = 'attachment; filename="1.pdf"'
+        page.showPage()
+        page.save()
 
-    # READ Optional GET param
-    get_param = request.GET.get("name", "World")
+        Cart.objects.filter(user=user).delete()
 
-    # Generate unique timestamp
-    ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S.%f")
-
-    p = canvas.Canvas(response)
-
-    # Write content on the PDF
-    p.drawString(100, 500, "Hello " + get_param + " (Dynamic PDF) - " + ts)
-
-    my_image = ImageReader("https://www.google.com/images/srpr/logo11w.png")
-
-    p.drawImage(my_image, 5, 50, mask="auto")
-    # Close the PDF object.
-    p.showPage()
-    p.save()
-
-    # Show the result to the user
-    return response
+        return response

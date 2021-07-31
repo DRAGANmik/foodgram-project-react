@@ -1,4 +1,3 @@
-# from rest_framework.generics import get_object_or_404
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
@@ -77,47 +76,16 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
 
 
-class IngredientItemPost(serializers.ModelSerializer):
-    # id = serializers.IntegerField(source="ingredient.id")
+class IngredientItemPost(serializers.Serializer):
+
     id = serializers.IntegerField(write_only=True)
     amount = serializers.IntegerField(write_only=True)
 
-    class Meta:
-        model = Ingredient
-        fields = ("id", "amount")
-
-    # def to_internal_value(self, value):
-    #     print(value)
-    #     try:
-    #         id = Ingredient.objects.get(id=value.get("id"))
-    #         amount = value.get("amount")
-    #         return {
-    #             'id': id,
-    #             'amount': amount
-    #         }
-    #     except:
-    #         id = Ingredient.objects.get(id=1)
-    #         amount = value.get("amount")
-    #         return {
-    #             'id': id,
-    #             'amount': amount
-    #         }
-
-    # def to_representation(self, obj):
-    #     return self._choices[obj]
-
-    # def to_representation(self, value):
-
-    #     id = Ingredient.objects.get(id=value.get("id"))
-    #     amount = value.get("amount")
-    #     return {
-    #         'id': id,
-    #         'amount': amount
-    #     }
-
 
 class RecipeSerializerPost(serializers.ModelSerializer):
-    ingredients = IngredientItemPost(many=True)
+    ingredients = IngredientItemPost(
+        many=True,
+    )
     image = Base64ImageField()
     tags = serializers.PrimaryKeyRelatedField(
         many=True, queryset=RecipeTag.objects.all()
@@ -133,6 +101,29 @@ class RecipeSerializerPost(serializers.ModelSerializer):
             "text",
             "cooking_time",
         ]
+
+    def validate(self, data):
+        unique_ingr = data["ingredients"]
+        ingr_list = []
+        for item in unique_ingr:
+            id = item["id"]
+            try:
+                exist_item_ingredient = get_object_or_404(
+                    IngredientItem, id=id
+                )
+                ingr_list.append((exist_item_ingredient.ingredient))
+            except Exception:
+                ingredient = get_object_or_404(Ingredient, id=id)
+                ingr_list.append(ingredient)
+
+        if len(ingr_list) != len(set(ingr_list)):
+            raise serializers.ValidationError(
+                {
+                    "message": "Извините,"
+                    " но добавить одинаковые ингредиенты нельзя."
+                }
+            )
+        return data
 
     def create(self, validated_data):
         image = validated_data.pop("image")
@@ -179,17 +170,26 @@ class RecipeSerializerPost(serializers.ModelSerializer):
                 instance.tags.add(tag)
         instance.tags.remove(*instance_tags)
 
+        instance_ingredients = [
+            ingredient for ingredient in instance.ingredients.all()
+        ]
+
         for item in ingredients:
             amount = item["amount"]
             id = item["id"]
             try:
-                get_object_or_404(IngredientItem, id=id)
+                exist_item_ingredient = get_object_or_404(
+                    IngredientItem, id=id
+                )
+                instance_ingredients.remove(exist_item_ingredient.ingredient)
             except Exception:
+
                 IngredientItem.objects.create(
                     recipe=instance,
                     ingredient=get_object_or_404(Ingredient, id=id),
                     amount=amount,
                 )
+        instance.ingredients.remove(*instance_ingredients)
 
         return instance
 

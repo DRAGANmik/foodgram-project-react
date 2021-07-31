@@ -11,10 +11,16 @@ User._meta.get_field("email").null = False
 
 class Subscription(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="author"
+        User,
+        on_delete=models.CASCADE,
+        related_name="author",
+        verbose_name="Автор",
     )
     subscriber = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="subscriber"
+        User,
+        on_delete=models.CASCADE,
+        related_name="subscriber",
+        verbose_name="Подписчик",
     )
 
     class Meta:

@@ -3,6 +3,7 @@ from django.contrib.auth import (
     get_user_model,
     password_validation,
 )
+from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
@@ -33,7 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
                 subscriber=request.user, author=obj
             )
             return bool(subscription)
-        except TypeError:
+        except (TypeError, AttributeError):
             return False
 
 
@@ -47,7 +48,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         subscriber = validated_data["subscriber"]
         if author == subscriber:
             raise serializers.ValidationError(
-                {"message": "Извините, но подписаться на себя нельзя."}
+                {"message": _("Извините, но подписаться на себя нельзя.")}
             )
         if not Subscription.objects.filter(
             author=author, subscriber=subscriber
@@ -55,12 +56,16 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             Subscription.objects.create(author=author, subscriber=subscriber)
         else:
             raise serializers.ValidationError(
-                {"message": "Извините, но подписаться второй раз нельзя."}
+                {"message": _("Извините, но подписаться второй раз нельзя.")}
             )
         return validated_data
 
 
-class DetailSerializer(serializers.ModelSerializer):
+class CreateUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        write_only=True, required=True, validators=[validate_password]
+    )
+
     class Meta:
         model = User
         fields = [
@@ -69,7 +74,21 @@ class DetailSerializer(serializers.ModelSerializer):
             "last_name",
             "first_name",
             "email",
+            "password",
         ]
+
+    def create(self, validated_data):
+        user = User.objects.create(
+            username=validated_data["username"],
+            email=validated_data["email"],
+            first_name=validated_data["first_name"],
+            last_name=validated_data["last_name"],
+        )
+
+        user.set_password(validated_data["password"])
+        user.save()
+
+        return user
 
 
 class AuthorSerializer(UserSerializer):
@@ -91,8 +110,15 @@ class AuthorSerializer(UserSerializer):
     def get_recipes(self, obj):
         from recipes.serializers import RecipeSubscriptionSerializer
 
-        qset = Recipe.objects.filter(author=obj)
-        return [RecipeSubscriptionSerializer(el).data for el in qset]
+        request = self.context["request"]
+        recipes_limit = request.query_params.get("recipes_limit")
+        queryset = Recipe.objects.filter(author=obj)
+
+        if recipes_limit is not None and recipes_limit.isnumeric():
+            recipes_limit = int(recipes_limit)
+            queryset = queryset[:recipes_limit]
+
+        return [RecipeSubscriptionSerializer(el).data for el in queryset]
 
     def get_recipes_count(self, obj):
         qset = Recipe.objects.filter(author=obj)
@@ -139,17 +165,17 @@ class TokenSerializer(serializers.Serializer):
         email = data["email"]
         password = data["password"]
         if email is None:
-            raise serializers.ValidationError("Введите email.")
+            raise serializers.ValidationError(_("Введите email."))
         if password is None:
-            raise serializers.ValidationError("Введите пароль.")
+            raise serializers.ValidationError(_("Введите пароль."))
 
         user = authenticate(username=email, password=password)
         if user is None:
             raise serializers.ValidationError(
-                "Пользователь с таким email или паролем не найден."
+                _("Пользователь с таким email или паролем не найден.")
             )
 
         if not user.is_active:
-            raise serializers.ValidationError("Пользователь заблокирован.")
+            raise serializers.ValidationError(_("Пользователь заблокирован."))
 
         return user
