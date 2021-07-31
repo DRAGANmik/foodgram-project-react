@@ -4,12 +4,14 @@ import factory
 from django.core.management.base import BaseCommand
 
 from recipes.factories import (
+    CartFactory,
+    FavoriteFactory,
     IngredientFactory,
     IngredientItemFactory,
     RecipeFactory,
     RecipeTagFactory,
 )
-from users.factories import UserFactory
+from users.factories import SubscriptionFactory, UserFactory
 
 
 class AllFactories:
@@ -24,11 +26,21 @@ class AllFactories:
 
     def create_recipe(self, arg):
         for _ in range(arg):
-            num_tags = random.randint(1, 5)
-            RecipeFactory.create(tags=num_tags)
+            num_tags = random.randint(1, 2)
+            num_ingr = random.randint(3, 6)
+            RecipeFactory.create(tags=num_tags, ingredients=num_ingr)
 
     def create_ingredient_item(self, arg):
         IngredientItemFactory.create_batch(arg)
+
+    def create_cart(self, arg):
+        CartFactory.create_batch(arg)
+
+    def create_favorite(self, arg):
+        FavoriteFactory.create_batch(arg)
+
+    def create_subscription(self, arg):
+        SubscriptionFactory.create_batch(arg)
 
 
 allfactories = AllFactories()
@@ -39,6 +51,9 @@ OPTIONS_AND_FUNCTIONS = {
     "recipetag": allfactories.create_recipetag,
     "recipe": allfactories.create_recipe,
     "ingredientitem": allfactories.create_ingredient_item,
+    "cart": allfactories.create_cart,
+    "favorite": allfactories.create_favorite,
+    "subscription": allfactories.create_subscription,
 }
 
 
@@ -81,6 +96,27 @@ class Command(BaseCommand):
             help="Creates IngredientItem objects",
             required=False,
         )
+        parser.add_argument(
+            "--cart",
+            nargs=1,
+            type=int,
+            help="Creates Cart objects",
+            required=False,
+        )
+        parser.add_argument(
+            "--favorite",
+            nargs=1,
+            type=int,
+            help="Creates Favorite objects",
+            required=False,
+        )
+        parser.add_argument(
+            "--subscription",
+            nargs=1,
+            type=int,
+            help="Creates Subscription objects",
+            required=False,
+        )
 
     def handle(self, *args, **options):  # noqa
 
@@ -103,15 +139,24 @@ class Command(BaseCommand):
                 with factory.Faker.override_default_locale("ru_RU"):
                     UserFactory.create_batch(10)
 
-                    IngredientFactory.create_batch(50)
+                    IngredientFactory.create_batch(1900)
 
-                    RecipeTagFactory.create_batch(5)
+                    RecipeTagFactory.create_batch(4)
 
-                    for _ in range(50):
-                        num_tags = random.randint(1, 5)
-                        RecipeFactory.create(tags=num_tags)
+                    for _ in range(100):
+                        num_tags = random.randint(1, 2)
+                        num_ingr = random.randint(3, 6)
+                        RecipeFactory.create(
+                            tags=num_tags, ingredients=num_ingr
+                        )
 
-                    IngredientItemFactory.create_batch(100)
+                    IngredientItemFactory.create_batch(200)
+
+                    CartFactory.create_batch(50)
+
+                    FavoriteFactory.create_batch(50)
+
+                    SubscriptionFactory.create_batch(50)
 
                 self.stdout.write(
                     self.style.SUCCESS("The database is filled with test data")

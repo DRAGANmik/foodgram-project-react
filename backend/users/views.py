@@ -43,7 +43,6 @@ class TokenAPIView(APIView):
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data
-        # token = get_tokens_for_user(user)
         token, created = Token.objects.get_or_create(user=user)
         return Response(
             {

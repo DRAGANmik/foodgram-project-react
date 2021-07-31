@@ -21,13 +21,11 @@ class ViewRecipeTests(APITestCase):
         cls.authorized_client.force_authenticate(user=cls.user)
         cls.path_recipes = reverse("recipes-list")
         cls.path_ingredients = reverse("ingredients-list")
-        # cls.paths_list = {
-
-        # }
 
     def test_recipe_correct_fileds_unauthorized(self):
         clinet = ViewRecipeTests.unauthorized_client
-        RecipeFactory.create_batch(50)
+        IngredientFactory.create_batch(5)
+        RecipeFactory.create_batch(5)
 
         response_data = clinet.get(ViewRecipeTests.path_recipes).data
 
@@ -54,7 +52,8 @@ class ViewRecipeTests(APITestCase):
 
     def test_recipe_correct_fileds_authorized(self):
         clinet = ViewRecipeTests.authorized_client
-        RecipeFactory.create_batch(50)
+        IngredientFactory.create_batch(5)
+        RecipeFactory.create_batch(5)
 
         response_data = clinet.get(ViewRecipeTests.path_recipes).data
 
