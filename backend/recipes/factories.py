@@ -27,7 +27,7 @@ try:
         with open("./data/ingredients.json") as json_file:
             return json.load(json_file)
 
-    name = [i["title"] for i in json_dict()]
+    name = [i["title"] for i in set(json_dict())]
     dimension = [i["dimension"] for i in json_dict()]
 
 except Exception:
