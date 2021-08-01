@@ -3,7 +3,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("SECRET_KEY", default="your_secret_key")
+SECRET_KEY = "____your_secret_key___"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -140,15 +140,3 @@ REST_FRAMEWORK = {
 CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ORIGIN_WHITELIST = ("https://localhost:3000",)
-
-
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
-
-
-EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND")
-EMAIL_USE_TLS = True
-EMAIL_HOST = os.environ.get("EMAIL_HOST")
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-EMAIL_PORT = os.environ.get("EMAIL_PORT")
-EMAIL_TIMEOUT = 5
