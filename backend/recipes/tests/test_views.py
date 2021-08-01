@@ -83,7 +83,7 @@ class ViewRecipeTests(APITestCase):
         IngredientFactory.create_batch(1)
         RecipeTagFactory.create_batch(1)
         RecipeFactory.create_batch(1)
-        IngredientItemFactory.create_batch(10)
+        IngredientItemFactory.create_batch(1)
 
         response_data = clinet.get(ViewRecipeTests.path_recipes).data
         results = response_data.get("results")[0]
@@ -127,7 +127,7 @@ class ViewRecipeTests(APITestCase):
         IngredientFactory.create_batch(1)
         RecipeTagFactory.create_batch(1)
         RecipeFactory.create_batch(1)
-        IngredientItemFactory.create_batch(10)
+        IngredientItemFactory.create_batch(1)
 
         response_data = clinet.get(ViewRecipeTests.path_recipes).data
         results = response_data.get("results")[0]
@@ -171,7 +171,7 @@ class ViewRecipeTests(APITestCase):
         IngredientFactory.create_batch(1)
         RecipeTagFactory.create_batch(1)
         RecipeFactory.create_batch(1)
-        IngredientItemFactory.create_batch(10)
+        IngredientItemFactory.create_batch(1)
 
         response_data = clinet.get(ViewRecipeTests.path_recipes + "1/").data
         tags = response_data["tags"][0]
