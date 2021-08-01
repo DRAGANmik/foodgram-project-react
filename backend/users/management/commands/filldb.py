@@ -139,7 +139,7 @@ class Command(BaseCommand):
                 with factory.Faker.override_default_locale("ru_RU"):
                     UserFactory.create_batch(10)
 
-                    IngredientFactory.create_batch(1900)
+                    IngredientFactory.create_batch(100)
 
                     RecipeTagFactory.create_batch(4)
 

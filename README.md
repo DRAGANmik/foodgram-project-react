@@ -1,8 +1,11 @@
-[![build and deploy](https://github.com/DRAGANmik/foodgram-project-react/actions/workflows/foodgram_workflow.yaml/badge.svg)](https://github.com/DRAGANmik/foodgram-project-react/actions/workflows/foodgram_workflow.yaml)
-[![codecov](https://codecov.io/gh/DRAGANmik/foodgram-project-react/branch/master/graph/badge.svg?token=QdEaJhRq8k)](https://codecov.io/gh/DRAGANmik/foodgram-project-react)
 # praktikum_new_diplom
 
-Дипломный проект — сайт Foodgram, «Продуктовый помощник». На этом сервисе пользователи смогут публиковать рецепты, подписываться на публикации других пользователей, добавлять понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать сводный список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.
+[![build and deploy](https://github.com/DRAGANmik/foodgram-project-react/actions/workflows/foodgram_workflow.yaml/badge.svg)](https://github.com/DRAGANmik/foodgram-project-react/actions/workflows/foodgram_workflow.yaml)
+[![codecov](https://codecov.io/gh/DRAGANmik/foodgram-project-react/branch/master/graph/badge.svg?token=QdEaJhRq8k)](https://codecov.io/gh/DRAGANmik/foodgram-project-react)
+
+
+
+Foodgram - «Продуктовый помощник». На этом сервисе пользователи смогут публиковать рецепты, подписываться на публикации других пользователей, добавлять понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать сводный список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.
 
 ## [ **АДРЕС**  ](http://recipesbook.ga/)    
  [ **АДМИНКА**  ](http://recipesbook.ga/admin/)
