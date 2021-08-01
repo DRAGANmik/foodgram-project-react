@@ -229,7 +229,7 @@ class ViewRecipeTests(APITestCase):
 
     def test_ingredients_correct_fileds_unauthorized(self):
         clinet = ViewRecipeTests.unauthorized_client
-        IngredientFactory.create_batch(50)
+        IngredientFactory.create_batch(10)
 
         response_data = clinet.get(ViewRecipeTests.path_ingredients).data
 

@@ -1,4 +1,3 @@
-import json
 import random
 import urllib
 
@@ -21,26 +20,15 @@ User = get_user_model()
 fake = Faker(["ru_RU"])
 
 
-try:
-
-    def json_dict():
-        with open("./data/ingredients.json") as json_file:
-            return json.load(json_file)
-
-    name = [i["title"] for i in set(json_dict())]
-    dimension = [i["dimension"] for i in json_dict()]
-
-except Exception:
-    name = [i for i in "Exception"]
-    dimension = [i for i in "Exception"]
-
-
 class IngredientFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Ingredient
+        django_get_or_create = ["name"]
 
-    name = factory.Iterator(name)
-    measurement_unit = factory.Iterator(dimension)
+    name = factory.Faker("word")
+    measurement_unit = factory.Faker(
+        "word", ext_word_list=["кг", "г", "мл", "л"]
+    )
 
 
 class RecipeTagFactory(factory.django.DjangoModelFactory):

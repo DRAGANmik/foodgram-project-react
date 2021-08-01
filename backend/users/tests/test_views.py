@@ -78,8 +78,8 @@ class ViewUsersTests(APITestCase):
         SubscriptionFactory.create_batch(5)
         IngredientFactory.create_batch(10)
         RecipeTagFactory.create_batch(1)
-        RecipeFactory.create_batch(10)
-        IngredientItemFactory.create_batch(50)
+        RecipeFactory.create_batch(2)
+        IngredientItemFactory.create_batch(2)
 
         author = User.objects.get(id=7)
         recipe = Recipe.objects.get(id=1)
