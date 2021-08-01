@@ -23,7 +23,7 @@ jobs:
         pip install flake8 pep8-naming flake8-broken-line flake8-return flake8-isort black pytest
         pip install -r requirements.txt
     - name: Test with pytest
-      run: pytest
+      run: python manage.py test --settings=foodgram.test
     - name: Generate Report
       run: |
         pip install coverage

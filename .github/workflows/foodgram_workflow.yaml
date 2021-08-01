@@ -28,7 +28,7 @@ jobs:
       run: black --check 
 
     - name: Test with pytest
-      run: pytest
+      run: python manage.py test --settings=foodgram.test
 
 
   build_and_push_to_docker_hub:

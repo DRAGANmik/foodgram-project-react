@@ -108,7 +108,6 @@ class ViewUsersTests(APITestCase):
         for field in fields:
             with self.subTest(field=field):
                 self.assertTrue(field in results, msg=f"Нет поля {field}")
-        print(results)
         recipes = results["recipes"][0]
 
         recipes_fields = ["id", "name", "image", "cooking_time"]
