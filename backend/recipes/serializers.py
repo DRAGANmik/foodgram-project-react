@@ -157,10 +157,12 @@ class RecipeSerializerPost(serializers.ModelSerializer):
         recipe = Recipe.objects.filter(id=instance.id)
         try:
             image = validated_data.pop("image")
-            recipe.update(image=image)
+            instance.image = image
+            instance.save()
         except KeyError:
 
             recipe.update(**validated_data)
+
         instance_tags = [tag for tag in instance.tags.all()]
 
         for tag in tags:

@@ -3,7 +3,6 @@ from rest_framework.test import APIClient, APITestCase
 
 from recipes.factories import (
     IngredientFactory,
-    IngredientItemFactory,
     RecipeFactory,
     RecipeTagFactory,
 )
@@ -27,7 +26,6 @@ class UrlRecipeTests(APITestCase):
         IngredientFactory.create_batch(1)
         RecipeTagFactory.create_batch(1)
         RecipeFactory.create_batch(1)
-        IngredientItemFactory.create_batch(10)
 
         response = clinet.get(reverse("recipes-list"))
         self.assertEqual(response.status_code, 200)
