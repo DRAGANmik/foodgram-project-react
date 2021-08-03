@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import EmailMultiAlternatives
 from django.dispatch import receiver
+from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
@@ -56,7 +57,7 @@ class LogoutAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        token = Token.objects.get(user=request.user)
+        token = get_object_or_404(Token, user=request.user)
         token.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -79,12 +80,11 @@ class UserViewSet(ModelViewSet):
         permission_classes=[permissions.IsAuthenticated],
     )
     def view_me(self, request):
-        user = User.objects.get(username=request.user.username)
+        user = get_object_or_404(User, username=request.user.username)
         serializer = UserSerializer(user, data=request.data)
 
-        if serializer.is_valid():
-            if request.method == "PATCH":
-                serializer.save()
+        if serializer.is_valid() and request.method == "PATCH":
+            serializer.save()
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -115,7 +115,9 @@ class UserViewSet(ModelViewSet):
                 }
             )
 
-        unsubscribe = Subscription.objects.get(**serializer.validated_data)
+        unsubscribe = get_object_or_404(
+            Subscription, **serializer.validated_data
+        )
         unsubscribe.delete()
         return Response(
             {"status": "Отписался"}, status=status.HTTP_204_NO_CONTENT

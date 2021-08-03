@@ -78,11 +78,20 @@ class RecipeFactory(factory.django.DjangoModelFactory):
         at_least = 4
         how_many = extracted or at_least
 
-        tags_count = Ingredient.objects.count()
-        how_many = min(tags_count, how_many)
-        start = random.randint(1, tags_count)
-        tags = Ingredient.objects.order_by("?")[start:how_many]
-        self.ingredients.add(*tags)
+        ingredients_count = Ingredient.objects.count()
+        start = random.randint(1, ingredients_count)
+        how_many = min(ingredients_count, how_many) + start
+
+        ingredients = Ingredient.objects.order_by("?")[start:how_many]
+        [
+            IngredientItem.objects.create(
+                ingredient=ingredient,
+                recipe=self,
+                amount=random.randint(1, 500),
+            )
+            for ingredient in ingredients
+        ]
+        self.ingredients.add(*ingredients)
 
     @factory.post_generation
     def image(self, created, extracted, **kwargs):
@@ -91,15 +100,6 @@ class RecipeFactory(factory.django.DjangoModelFactory):
 
         image = urllib.request.urlopen("https://picsum.photos/800/800").read()
         self.image.save(self.name + ".jpg", ContentFile(image), save=False)
-
-
-class IngredientItemFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = IngredientItem
-
-    ingredient = factory.SubFactory(IngredientFactory)
-    recipe = factory.Iterator(Recipe.objects.all())
-    amount = factory.LazyFunction(lambda: random.randint(1, 500))
 
 
 class CartFactory(factory.django.DjangoModelFactory):

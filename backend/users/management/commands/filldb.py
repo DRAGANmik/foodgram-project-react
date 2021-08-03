@@ -3,15 +3,14 @@ import random
 import factory
 from django.core.management.base import BaseCommand
 
-from recipes.factories import (
+from recipes.tests.factories import (
     CartFactory,
     FavoriteFactory,
     IngredientFactory,
-    IngredientItemFactory,
     RecipeFactory,
     RecipeTagFactory,
 )
-from users.factories import SubscriptionFactory, UserFactory
+from users.tests.factories import SubscriptionFactory, UserFactory
 
 
 class AllFactories:
@@ -30,9 +29,6 @@ class AllFactories:
             num_ingr = random.randint(3, 6)
             RecipeFactory.create(tags=num_tags, ingredients=num_ingr)
 
-    def create_ingredient_item(self, arg):
-        IngredientItemFactory.create_batch(arg)
-
     def create_cart(self, arg):
         CartFactory.create_batch(arg)
 
@@ -50,7 +46,6 @@ OPTIONS_AND_FUNCTIONS = {
     "ingredient": allfactories.create_ingredient,
     "recipetag": allfactories.create_recipetag,
     "recipe": allfactories.create_recipe,
-    "ingredientitem": allfactories.create_ingredient_item,
     "cart": allfactories.create_cart,
     "favorite": allfactories.create_favorite,
     "subscription": allfactories.create_subscription,
@@ -87,13 +82,6 @@ class Command(BaseCommand):
             nargs=1,
             type=int,
             help="Creates Recipe objects",
-            required=False,
-        )
-        parser.add_argument(
-            "--ingredientitem",
-            nargs=1,
-            type=int,
-            help="Creates IngredientItem objects",
             required=False,
         )
         parser.add_argument(
@@ -149,8 +137,6 @@ class Command(BaseCommand):
                         RecipeFactory.create(
                             tags=num_tags, ingredients=num_ingr
                         )
-
-                    IngredientItemFactory.create_batch(200)
 
                     CartFactory.create_batch(50)
 

@@ -30,5 +30,5 @@ class SubscriptionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Subscription
 
-    author = factory.SubFactory(UserFactory)
-    subscriber = factory.Iterator(User.objects.all())
+    author = factory.Iterator(User.objects.all())
+    subscriber = factory.SubFactory(UserFactory)

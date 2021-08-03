@@ -114,6 +114,11 @@ class Favorite(models.Model):
         verbose_name = "Избранное"
         verbose_name_plural = "Избранные"
         ordering = ["id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe"], name="unique_favorite"
+            )
+        ]
 
     def __str__(self):
         return "Пользователь {} рецепт {}".format(
@@ -139,6 +144,11 @@ class Cart(models.Model):
         verbose_name = "Корзина"
         verbose_name_plural = "Корзины"
         ordering = ["id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe"], name="unique_cart"
+            )
+        ]
 
     def __str__(self):
         return "Пользователь {} рецепт {}".format(

@@ -1,18 +1,20 @@
 from django.urls import reverse
 from rest_framework.test import APIClient, APITestCase
 
-from recipes.factories import (
-    IngredientFactory,
-    RecipeFactory,
-    RecipeTagFactory,
-)
-from users.factories import UserFactory
+from users.tests.factories import UserFactory
+
+from .factories import IngredientFactory, RecipeFactory, RecipeTagFactory
 
 
 class UrlRecipeTests(APITestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
+
+        UserFactory.create_batch(5)
+        IngredientFactory.create_batch(10)
+        RecipeTagFactory.create_batch(2)
+        RecipeFactory.create_batch(10)
 
         cls.user = UserFactory()
         cls.unauthorized_client = APIClient()
@@ -23,9 +25,6 @@ class UrlRecipeTests(APITestCase):
 
     def test_urls_smoke_unauthorized(self):
         clinet = UrlRecipeTests.unauthorized_client
-        IngredientFactory.create_batch(1)
-        RecipeTagFactory.create_batch(1)
-        RecipeFactory.create_batch(1)
 
         response = clinet.get(reverse("recipes-list"))
         self.assertEqual(response.status_code, 200)

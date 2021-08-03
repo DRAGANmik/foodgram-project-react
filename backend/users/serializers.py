@@ -33,7 +33,7 @@ class UserSerializer(serializers.ModelSerializer):
             subscription = Subscription.objects.filter(
                 subscriber=request.user, author=obj
             )
-            return bool(subscription)
+            return subscription.exists()
         except (TypeError, AttributeError):
             return False
 
@@ -50,11 +50,10 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"message": _("Извините, но подписаться на себя нельзя.")}
             )
-        if not Subscription.objects.filter(
+        obj, created = Subscription.objects.get_or_create(
             author=author, subscriber=subscriber
-        ):
-            Subscription.objects.create(author=author, subscriber=subscriber)
-        else:
+        )
+        if not created:
             raise serializers.ValidationError(
                 {"message": _("Извините, но подписаться второй раз нельзя.")}
             )

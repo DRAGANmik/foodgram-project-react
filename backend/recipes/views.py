@@ -1,16 +1,17 @@
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
-from rest_framework import permissions, serializers, status
+from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
-from recipes.filters import RecipeFilter
+from recipes.filters import IngredientFilter, RecipeFilter
 from recipes.models import (
     Cart,
     Favorite,
@@ -34,7 +35,6 @@ class ListDetailViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
 
 
 class RecipeViewSet(ModelViewSet):
-    queryset = Recipe.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
@@ -92,7 +92,7 @@ class RecipeViewSet(ModelViewSet):
                 }
             )
 
-        disfavor = Favorite.objects.get(**serializer.validated_data)
+        disfavor = get_object_or_404(Favorite, **serializer.validated_data)
         disfavor.delete()
         return Response(
             {"status": "Удалено из избранного"},
@@ -127,7 +127,7 @@ class RecipeViewSet(ModelViewSet):
                 }
             )
 
-        empty = Cart.objects.get(**serializer.validated_data)
+        empty = get_object_or_404(Cart, **serializer.validated_data)
         empty.delete()
         return Response(
             {"status": "Удалено из корзины"}, status=status.HTTP_204_NO_CONTENT
@@ -141,6 +141,8 @@ class RecipeTagViewSet(ListDetailViewSet):
 
 
 class IngredientViewSet(ModelViewSet):
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filterset_class = IngredientFilter
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None

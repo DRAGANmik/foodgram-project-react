@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
@@ -55,7 +56,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_ingredients(self, obj):
         qset = IngredientItem.objects.filter(recipe=obj)
-        return [IngredientItemSerializer(el).data for el in qset]
+        return [IngredientItemSerializer(item).data for item in qset]
 
     def get_is_favorited(self, obj):
         try:
@@ -63,7 +64,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             is_favorited = Favorite.objects.filter(
                 user=request.user, recipe=obj
             )
-            return bool(is_favorited)
+            return is_favorited.exists()
         except TypeError:
             return False
 
@@ -71,7 +72,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         try:
             request = self.context.get("request")
             is_in_cart = Cart.objects.filter(user=request.user, recipe=obj)
-            return bool(is_in_cart)
+            return is_in_cart.exists()
         except TypeError:
             return False
 
@@ -107,14 +108,31 @@ class RecipeSerializerPost(serializers.ModelSerializer):
         ingr_list = []
         for item in unique_ingr:
             id = item["id"]
+            amount = item["amount"]
             try:
-                exist_item_ingredient = get_object_or_404(
-                    IngredientItem, id=id
+                exist_item = get_object_or_404(
+                    IngredientItem, id=id, amount=amount
                 )
-                ingr_list.append((exist_item_ingredient.ingredient))
+                if exist_item.ingredient in ingr_list:
+                    raise serializers.ValidationError(
+                        {
+                            "message": "Извините,"
+                            " но добавить одинаковые ингредиенты нельзя."
+                        }
+                    )
+                else:
+                    ingr_list.append(exist_item.ingredient)
             except Exception:
-                ingredient = get_object_or_404(Ingredient, id=id)
-                ingr_list.append(ingredient)
+                new_ingr = get_object_or_404(Ingredient, id=id)
+                if new_ingr in ingr_list:
+                    raise serializers.ValidationError(
+                        {
+                            "message": "Извините,"
+                            " но добавить одинаковые ингредиенты нельзя."
+                        }
+                    )
+                else:
+                    ingr_list.append(new_ingr)
 
         if len(ingr_list) != len(set(ingr_list)):
             raise serializers.ValidationError(
@@ -138,30 +156,32 @@ class RecipeSerializerPost(serializers.ModelSerializer):
         for tag in tags:
             recipe.tags.add(tag)
 
-        for item in ingredients:
-            amount = item["amount"]
-            id = item["id"]
-            IngredientItem.objects.create(
+        items = [
+            IngredientItem(
                 recipe=recipe,
-                ingredient=get_object_or_404(Ingredient, id=id),
-                amount=amount,
+                ingredient=get_object_or_404(Ingredient, id=item["id"]),
+                amount=item["amount"],
             )
+            for item in ingredients
+        ]
 
+        IngredientItem.objects.bulk_create(items)
         return recipe
 
+    @transaction.atomic
     def update(self, instance, validated_data):
 
         tags = validated_data.pop("tags")
         ingredients = validated_data.pop("ingredients")
-
-        recipe = Recipe.objects.filter(id=instance.id)
         try:
             image = validated_data.pop("image")
             instance.image = image
             instance.save()
         except KeyError:
+            pass
 
-            recipe.update(**validated_data)
+        recipe = Recipe.objects.filter(id=instance.id)
+        recipe.update(**validated_data)
 
         instance_tags = [tag for tag in instance.tags.all()]
 
@@ -175,22 +195,22 @@ class RecipeSerializerPost(serializers.ModelSerializer):
         instance_ingredients = [
             ingredient for ingredient in instance.ingredients.all()
         ]
-
         for item in ingredients:
             amount = item["amount"]
             id = item["id"]
             try:
-                exist_item_ingredient = get_object_or_404(
-                    IngredientItem, id=id
+                exist_item_ingredient = IngredientItem.objects.get(
+                    id=id, amount=amount
                 )
-                instance_ingredients.remove(exist_item_ingredient.ingredient)
-            except Exception:
 
+                instance_ingredients.remove(exist_item_ingredient.ingredient)
+            except IngredientItem.DoesNotExist:
                 IngredientItem.objects.create(
                     recipe=instance,
                     ingredient=get_object_or_404(Ingredient, id=id),
                     amount=amount,
                 )
+
         instance.ingredients.remove(*instance_ingredients)
 
         return instance
@@ -204,9 +224,8 @@ class FavoriteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = validated_data["user"]
         recipe = validated_data["recipe"]
-        if not Favorite.objects.filter(user=user, recipe=recipe):
-            Favorite.objects.create(user=user, recipe=recipe)
-        else:
+        obj, created = Favorite.objects.get_or_create(user=user, recipe=recipe)
+        if not created:
             raise serializers.ValidationError(
                 {
                     "message": "Извините,"
@@ -224,9 +243,8 @@ class CartSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = validated_data["user"]
         recipe = validated_data["recipe"]
-        if not Cart.objects.filter(user=user, recipe=recipe):
-            Cart.objects.create(user=user, recipe=recipe)
-        else:
+        obj, created = Cart.objects.get_or_create(user=user, recipe=recipe)
+        if not created:
             raise serializers.ValidationError(
                 {"message": "Извините, но рецепт уже добвлен в корзину."}
             )

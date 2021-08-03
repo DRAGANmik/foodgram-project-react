@@ -1,19 +1,20 @@
 from django.urls import reverse
 from rest_framework.test import APIClient, APITestCase
 
-from recipes.factories import (
-    IngredientFactory,
-    IngredientItemFactory,
-    RecipeFactory,
-    RecipeTagFactory,
-)
-from users.factories import UserFactory
+from users.tests.factories import UserFactory
+
+from .factories import IngredientFactory, RecipeFactory, RecipeTagFactory
 
 
 class ViewRecipeTests(APITestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
+
+        UserFactory.create_batch(5)
+        IngredientFactory.create_batch(20)
+        RecipeTagFactory.create_batch(2)
+        RecipeFactory.create_batch(10)
 
         cls.user = UserFactory()
         cls.unauthorized_client = APIClient()
@@ -24,9 +25,6 @@ class ViewRecipeTests(APITestCase):
 
     def test_recipe_correct_fileds_unauthorized(self):
         clinet = ViewRecipeTests.unauthorized_client
-        IngredientFactory.create_batch(5)
-        RecipeFactory.create_batch(5)
-
         response_data = clinet.get(ViewRecipeTests.path_recipes).data
 
         self.assertTrue("next" in response_data)
@@ -52,9 +50,6 @@ class ViewRecipeTests(APITestCase):
 
     def test_recipe_correct_fileds_authorized(self):
         clinet = ViewRecipeTests.authorized_client
-        IngredientFactory.create_batch(5)
-        RecipeFactory.create_batch(5)
-
         response_data = clinet.get(ViewRecipeTests.path_recipes).data
 
         self.assertTrue("next" in response_data)
@@ -80,10 +75,6 @@ class ViewRecipeTests(APITestCase):
 
     def test_recipe_nested_fields_unauthorized(self):
         clinet = ViewRecipeTests.unauthorized_client
-        IngredientFactory.create_batch(1)
-        RecipeTagFactory.create_batch(1)
-        RecipeFactory.create_batch(1)
-        IngredientItemFactory.create_batch(1)
 
         response_data = clinet.get(ViewRecipeTests.path_recipes).data
         results = response_data.get("results")[0]
@@ -124,10 +115,6 @@ class ViewRecipeTests(APITestCase):
 
     def test_recipe_nested_fields_authorized(self):
         clinet = ViewRecipeTests.authorized_client
-        IngredientFactory.create_batch(1)
-        RecipeTagFactory.create_batch(1)
-        RecipeFactory.create_batch(1)
-        IngredientItemFactory.create_batch(1)
 
         response_data = clinet.get(ViewRecipeTests.path_recipes).data
         results = response_data.get("results")[0]
@@ -168,10 +155,6 @@ class ViewRecipeTests(APITestCase):
 
     def test_recipe_detail_fields_unauthorized(self):
         clinet = ViewRecipeTests.unauthorized_client
-        IngredientFactory.create_batch(1)
-        RecipeTagFactory.create_batch(1)
-        RecipeFactory.create_batch(1)
-        IngredientItemFactory.create_batch(1)
 
         response_data = clinet.get(ViewRecipeTests.path_recipes + "1/").data
         tags = response_data["tags"][0]
@@ -229,7 +212,6 @@ class ViewRecipeTests(APITestCase):
 
     def test_ingredients_correct_fileds_unauthorized(self):
         clinet = ViewRecipeTests.unauthorized_client
-        IngredientFactory.create_batch(10)
 
         response_data = clinet.get(ViewRecipeTests.path_ingredients).data
 
@@ -250,7 +232,6 @@ class ViewRecipeTests(APITestCase):
 
     def test_ingredients_correct_fileds_authorized(self):
         clinet = ViewRecipeTests.authorized_client
-        IngredientFactory.create_batch(10)
 
         response_data = clinet.get(ViewRecipeTests.path_ingredients).data
         self.assertFalse("next" in response_data)
@@ -270,7 +251,6 @@ class ViewRecipeTests(APITestCase):
 
     def test_ingredients_correct_fileds_detail(self):
         clinet = ViewRecipeTests.unauthorized_client
-        IngredientFactory.create_batch(10)
 
         response_data = clinet.get(
             ViewRecipeTests.path_ingredients + "1/"
