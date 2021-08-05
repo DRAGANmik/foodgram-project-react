@@ -18,7 +18,7 @@ class UrlUsersTests(APITestCase):
         UserFactory.create_batch(5)
         IngredientFactory.create_batch(10)
         RecipeTagFactory.create_batch(2)
-        RecipeFactory.create_batch(10)
+        RecipeFactory.create_batch(2)
 
         cls.user = UserFactory()
         cls.unauthorized_client = APIClient()

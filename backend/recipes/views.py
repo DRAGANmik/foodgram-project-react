@@ -57,7 +57,7 @@ class RecipeViewSet(ModelViewSet):
             queryset = queryset.filter(favorite__in=favorite)
         elif is_favorited == "false":
             queryset = queryset.exclude(favorite__in=favorite)
-        return queryset.all()
+        return queryset.all().order_by("id")
 
     def get_serializer_class(self):
         if self.action != "list" and self.action != "retrieve":

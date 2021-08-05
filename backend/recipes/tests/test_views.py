@@ -33,9 +33,9 @@ class ViewRecipeTests(APITestCase):
         super().setUpClass()
 
         UserFactory.create_batch(5)
-        IngredientFactory.create_batch(20)
+        IngredientFactory.create_batch(30)
         RecipeTagFactory.create_batch(4)
-        RecipeFactory.create_batch(10)
+        RecipeFactory.create_batch(5)
 
         cls.user = UserFactory()
         cls.unauthorized_client = APIClient()
@@ -45,6 +45,9 @@ class ViewRecipeTests(APITestCase):
         cls.path_ingredients = reverse("ingredients-list")
 
     def test_recipe_correct_fileds_unauthorized(self):
+
+        """Check if fields exists"""
+
         clinet = ViewRecipeTests.unauthorized_client
         response_data = clinet.get(ViewRecipeTests.path_recipes).data
 
@@ -70,6 +73,9 @@ class ViewRecipeTests(APITestCase):
                 self.assertTrue(field in results, msg=f"Нет поля {field}")
 
     def test_recipe_correct_fileds_authorized(self):
+
+        """Check if fields exists"""
+
         clinet = ViewRecipeTests.authorized_client
         response_data = clinet.get(ViewRecipeTests.path_recipes).data
 
@@ -95,6 +101,9 @@ class ViewRecipeTests(APITestCase):
                 self.assertTrue(field in results, msg=f"Нет поля {field}")
 
     def test_recipe_nested_fields_unauthorized(self):
+
+        """Check if fields exists"""
+
         clinet = ViewRecipeTests.unauthorized_client
 
         response_data = clinet.get(ViewRecipeTests.path_recipes).data
@@ -135,6 +144,9 @@ class ViewRecipeTests(APITestCase):
                 )
 
     def test_recipe_nested_fields_authorized(self):
+
+        """Check if fields exists"""
+
         clinet = ViewRecipeTests.authorized_client
 
         response_data = clinet.get(ViewRecipeTests.path_recipes).data
@@ -175,6 +187,9 @@ class ViewRecipeTests(APITestCase):
                 )
 
     def test_recipe_detail_fields_unauthorized(self):
+
+        """Check if fields exists"""
+
         clinet = ViewRecipeTests.unauthorized_client
 
         response_data = clinet.get(ViewRecipeTests.path_recipes + "1/").data
@@ -232,6 +247,9 @@ class ViewRecipeTests(APITestCase):
                 )
 
     def test_ingredients_correct_fileds_unauthorized(self):
+
+        """Check if fields exists"""
+
         clinet = ViewRecipeTests.unauthorized_client
 
         response_data = clinet.get(ViewRecipeTests.path_ingredients).data
@@ -252,6 +270,9 @@ class ViewRecipeTests(APITestCase):
                 )
 
     def test_ingredients_correct_fileds_authorized(self):
+
+        """Check if fields exists"""
+
         clinet = ViewRecipeTests.authorized_client
 
         response_data = clinet.get(ViewRecipeTests.path_ingredients).data
@@ -271,6 +292,9 @@ class ViewRecipeTests(APITestCase):
                 )
 
     def test_ingredients_correct_fileds_detail(self):
+
+        """Check if fields exists"""
+
         clinet = ViewRecipeTests.unauthorized_client
 
         response_data = clinet.get(
@@ -293,6 +317,9 @@ class ViewRecipeTests(APITestCase):
 
     @override_settings(MEDIA_ROOT=tempfile.gettempdir())
     def test_recipes_create(self):
+
+        """Check ability to create new recipe"""
+
         image = TEST_IMAGE
         client = ViewRecipeTests.authorized_client
         recipe_count = Recipe.objects.count()
@@ -344,6 +371,10 @@ class ViewRecipeTests(APITestCase):
         )
 
     def test_recipes_update(self):
+
+        """Update recipe with change all data
+        Update ingredients with add new"""
+
         user = UserFactory()
         client = APIClient()
         client.force_authenticate(user=user)
@@ -459,6 +490,10 @@ class ViewRecipeTests(APITestCase):
         self.assertFalse(last_recipe.image is None)
 
     def test_recipes_cart(self):
+
+        """Add recipe in cart, try to add another
+        Delete recipe, after try another"""
+
         user = UserFactory()
         client = APIClient()
         client.force_authenticate(user=user)
@@ -502,6 +537,10 @@ class ViewRecipeTests(APITestCase):
         self.assertEqual(Cart.objects.filter(user=user).count(), count_cart)
 
     def test_recipes_favorite(self):
+
+        """Add recipe in favorite, try to add another
+        Delete recipe, after try another"""
+
         user = UserFactory()
         client = APIClient()
         client.force_authenticate(user=user)

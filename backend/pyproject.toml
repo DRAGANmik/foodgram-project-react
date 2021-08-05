@@ -43,7 +43,6 @@ django-extra-fields = "^3.0.2"
 django-rest-passwordreset = "^1.2.0"
 factory-boy = "^3.2.0"
 reportlab = "^3.5.68"
-coverage = "^5.5"
 
 [tool.poetry.dev-dependencies]
 pytest-django = "^4.4.0"

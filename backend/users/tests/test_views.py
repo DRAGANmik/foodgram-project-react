@@ -10,6 +10,7 @@ from recipes.tests.factories import (
 )
 
 from .factories import SubscriptionFactory, UserFactory
+from users.models import Subscription
 
 User = get_user_model()
 
@@ -29,13 +30,16 @@ class ViewUsersTests(APITestCase):
         SubscriptionFactory.create_batch(5)
         IngredientFactory.create_batch(10)
         RecipeTagFactory.create_batch(2)
-        RecipeFactory.create_batch(20)
+        RecipeFactory.create_batch(5)
 
     def test_users_correct_fields_unauthorized(self):
-        clinet = ViewUsersTests.unauthorized_client
+
+        """Check if fields exists"""
+
+        client = ViewUsersTests.unauthorized_client
         UserFactory.create_batch(10)
 
-        response_data = clinet.get(ViewUsersTests.path_users).data
+        response_data = client.get(ViewUsersTests.path_users).data
 
         self.assertTrue("next" in response_data)
         self.assertTrue("previous" in response_data)
@@ -55,10 +59,13 @@ class ViewUsersTests(APITestCase):
                 self.assertTrue(field in results, msg=f"Нет поля {field}")
 
     def test_users_correct_fields_authorized(self):
-        clinet = ViewUsersTests.authorized_client
+
+        """Check if fields exists"""
+
+        client = ViewUsersTests.authorized_client
         UserFactory.create_batch(10)
 
-        response_data = clinet.get(ViewUsersTests.path_users).data
+        response_data = client.get(ViewUsersTests.path_users).data
 
         self.assertTrue("next" in response_data)
         self.assertTrue("previous" in response_data)
@@ -78,6 +85,9 @@ class ViewUsersTests(APITestCase):
                 self.assertTrue(field in results, msg=f"Нет поля {field}")
 
     def test_users_subscriptions_correct_fields(self):
+
+        """Check if fields exists"""
+
         user = UserFactory()
         author = UserFactory()
         client = APIClient()
@@ -116,6 +126,9 @@ class ViewUsersTests(APITestCase):
                 )
 
     def test_users_register(self):
+
+        """Register user and check if can register again with used data"""
+
         client = ViewUsersTests.unauthorized_client
         user_count = User.objects.count()
         user = {
@@ -162,6 +175,9 @@ class ViewUsersTests(APITestCase):
         )
 
     def test_users_change_password(self):
+
+        """Check ability to change password"""
+
         user = UserFactory()
         client = APIClient()
         client.force_authenticate(user=user)
@@ -180,4 +196,151 @@ class ViewUsersTests(APITestCase):
 
         self.assertTrue(
             client.login(username=user.email, password="Test1!1Test11")
+        )
+
+    def test_users_subscribe(self):
+
+        """Subscribe to author, try to do it another.
+        Unsubscribe from author after try again"""
+
+        user = UserFactory()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        subscription = Subscription.objects.filter(subscriber=user).count()
+        response = client.get(
+            path=self.path_users + "1/subscribe/",
+        )
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_201_CREATED,
+        )
+        self.assertEqual(
+            Subscription.objects.filter(subscriber=user).count(),
+            subscription + 1,
+        )
+        response = client.get(
+            path=self.path_users + "1/subscribe/",
+        )
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertEqual(
+            Subscription.objects.filter(subscriber=user).count(),
+            subscription + 1,
+        )
+
+        response = client.delete(
+            path=self.path_users + "1/subscribe/",
+        )
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_204_NO_CONTENT,
+        )
+        self.assertEqual(
+            Subscription.objects.filter(subscriber=user).count(), subscription
+        )
+        response = client.delete(
+            path=self.path_users + "1/subscribe/",
+        )
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertEqual(
+            Subscription.objects.filter(subscriber=user).count(), subscription
+        )
+
+    def test_users_me_page(self):
+
+        """ Test correct fields on "me" page """
+
+        client = ViewUsersTests.authorized_client
+        response = client.get(ViewUsersTests.path_users + "me/").data
+
+        fields = [
+            "id",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "is_subscribed",
+        ]
+
+        for field in fields:
+            with self.subTest(field=field):
+                self.assertTrue(
+                    field in response, msg=f"Нет поля {field}"
+                )
+
+    def test_users_me_correct_context(self):
+
+        """ Test correct context on "me" page """
+
+        user = UserFactory()
+        client = APIClient()
+        client.force_authenticate(user=user)
+
+        response = client.get(ViewUsersTests.path_users + "me/").data
+
+        self.assertEqual(user.id, response["id"])
+        self.assertEqual(user.email, response["email"])
+        self.assertEqual(user.username, response["username"])
+        self.assertEqual(user.first_name, response["first_name"])
+        self.assertEqual(user.last_name, response["last_name"])
+        self.assertFalse(response["is_subscribed"])
+
+    def test_users_subscriptions_page(self):
+
+        """ Test correct fields on subscriptions page """
+
+        client = ViewUsersTests.authorized_client
+        author = UserFactory()
+        RecipeFactory.create(author=author)
+        client.get(
+            path=self.path_users + f"{author.id}/subscribe/",
+        )
+
+        response_data = client.get(ViewUsersTests.path_users + "subscriptions/").data
+
+        self.assertTrue("next" in response_data)
+        self.assertTrue("previous" in response_data)
+        self.assertTrue("results" in response_data)
+        results = response_data.get("results")[0]
+
+        fields = [
+            "id",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "is_subscribed",
+            "recipes"
+        ]
+
+        for field in fields:
+            with self.subTest(field=field):
+                self.assertTrue(
+                    field in results, msg=f"Нет поля {field}"
+                )
+
+        recipes = results.get("recipes")[0]
+        recipes_fields = ["id", "name", "image", "cooking_time"]
+        for field in recipes_fields:
+            with self.subTest(field=field):
+                self.assertTrue(field in recipes, msg=f"Нет поля {field} в recipes")
+
+    def test_backend(self):
+
+        """ Test double authentication EMAIL and USERNAME """
+
+        client = ViewUsersTests.unauthorized_client
+        user = UserFactory()
+
+        self.assertTrue(
+            client.login(username=user.email, password="Test1!1Test")
+        )
+
+        self.assertTrue(
+            client.login(username=user.username, password="Test1!1Test")
         )

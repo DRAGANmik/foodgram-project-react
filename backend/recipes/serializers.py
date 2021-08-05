@@ -56,7 +56,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_ingredients(self, obj):
         qset = IngredientItem.objects.filter(recipe=obj)
-        return [IngredientItemSerializer(item).data for item in qset]
+        return IngredientItemSerializer(qset, many=True).data
 
     def get_is_favorited(self, obj):
         try:
