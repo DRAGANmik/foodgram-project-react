@@ -41,7 +41,7 @@ class RecipeViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        queryset = Recipe.objects.all()
+        queryset = Recipe.objects.all().order_by("-id")
         is_in_shopping_cart = self.request.query_params.get(
             "is_in_shopping_cart"
         )
@@ -57,7 +57,7 @@ class RecipeViewSet(ModelViewSet):
             queryset = queryset.filter(favorite__in=favorite)
         elif is_favorited == "false":
             queryset = queryset.exclude(favorite__in=favorite)
-        return queryset.all().order_by("id")
+        return queryset.all().order_by("-id")
 
     def get_serializer_class(self):
         if self.action != "list" and self.action != "retrieve":
