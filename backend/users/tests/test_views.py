@@ -8,9 +8,9 @@ from recipes.tests.factories import (
     RecipeFactory,
     RecipeTagFactory,
 )
+from users.models import Subscription
 
 from .factories import SubscriptionFactory, UserFactory
-from users.models import Subscription
 
 User = get_user_model()
 
@@ -253,7 +253,7 @@ class ViewUsersTests(APITestCase):
 
     def test_users_me_page(self):
 
-        """ Test correct fields on "me" page """
+        """Test correct fields on "me" page"""
 
         client = ViewUsersTests.authorized_client
         response = client.get(ViewUsersTests.path_users + "me/").data
@@ -269,13 +269,11 @@ class ViewUsersTests(APITestCase):
 
         for field in fields:
             with self.subTest(field=field):
-                self.assertTrue(
-                    field in response, msg=f"Нет поля {field}"
-                )
+                self.assertTrue(field in response, msg=f"Нет поля {field}")
 
     def test_users_me_correct_context(self):
 
-        """ Test correct context on "me" page """
+        """Test correct context on "me" page"""
 
         user = UserFactory()
         client = APIClient()
@@ -292,7 +290,7 @@ class ViewUsersTests(APITestCase):
 
     def test_users_subscriptions_page(self):
 
-        """ Test correct fields on subscriptions page """
+        """Test correct fields on subscriptions page"""
 
         client = ViewUsersTests.authorized_client
         author = UserFactory()
@@ -301,7 +299,9 @@ class ViewUsersTests(APITestCase):
             path=self.path_users + f"{author.id}/subscribe/",
         )
 
-        response_data = client.get(ViewUsersTests.path_users + "subscriptions/").data
+        response_data = client.get(
+            ViewUsersTests.path_users + "subscriptions/"
+        ).data
 
         self.assertTrue("next" in response_data)
         self.assertTrue("previous" in response_data)
@@ -315,24 +315,24 @@ class ViewUsersTests(APITestCase):
             "first_name",
             "last_name",
             "is_subscribed",
-            "recipes"
+            "recipes",
         ]
 
         for field in fields:
             with self.subTest(field=field):
-                self.assertTrue(
-                    field in results, msg=f"Нет поля {field}"
-                )
+                self.assertTrue(field in results, msg=f"Нет поля {field}")
 
         recipes = results.get("recipes")[0]
         recipes_fields = ["id", "name", "image", "cooking_time"]
         for field in recipes_fields:
             with self.subTest(field=field):
-                self.assertTrue(field in recipes, msg=f"Нет поля {field} в recipes")
+                self.assertTrue(
+                    field in recipes, msg=f"Нет поля {field} в recipes"
+                )
 
     def test_backend(self):
 
-        """ Test double authentication EMAIL and USERNAME """
+        """Test double authentication EMAIL and USERNAME"""
 
         client = ViewUsersTests.unauthorized_client
         user = UserFactory()
