@@ -33,7 +33,7 @@ class ViewRecipeTests(APITestCase):
         super().setUpClass()
 
         UserFactory.create_batch(5)
-        IngredientFactory.create_batch(30)
+        IngredientFactory.create_batch(40)
         RecipeTagFactory.create_batch(4)
         RecipeFactory.create_batch(5)
 
